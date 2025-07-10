@@ -1,9 +1,12 @@
 import asyncio
 
-from langchain_core.messages import AIMessageChunk
-from agents import graph
+from langchain_core.messages import AIMessageChunk, HumanMessage
+from langchain_core.runnables import RunnablePassthrough
+from agents import graph, db_tools
 from PIL import Image
+from tools import get_db
 import io
+
 
 async def main():
     # # Uncomment the following lines to display graph
@@ -11,13 +14,17 @@ async def main():
     # pil_image = Image.open(io.BytesIO(image))
     # pil_image.show()
 
-    async for messages in graph.astream({"user_query": "Where is my order A2345"}, stream_mode="messages"):
-        if messages and isinstance(messages[0], AIMessageChunk):
-            print(messages[0].content, end='')    
+    while True:
+        input_message = input("User: ")
+        
+        if input_message == "exit":
+            break
+        response = graph.invoke({
+            "messages": [HumanMessage(content=input_message)]
+        })
+        print("Bot: ", response['final_answer'])
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     asyncio.run(main())
-
-
+    
